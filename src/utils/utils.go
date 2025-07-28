@@ -3,23 +3,26 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"os"
+	"fmt"
 
 	"github.com/golang-jwt/jwt/v4"
+	_ "github.com/joho/godotenv"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // JWT Secret Key - Assuming it's stored in an environment variable
-var appSecretKey = os.Getenv("APP_SECRET_KEY")
+var appSecretKey = "phinex"
 
 // JwtEncode generates a JWT token with a payload similar to the TypeScript example
 func JwtEncode(data map[string]interface{}) (string, error) {
+
 	// Creating a new JWT token with the claims
 	claims := jwt.MapClaims{
 		"userId":          data["userId"],
 		"isAuthenticated": data["isAuthenticated"],
 		"email":           data["email"],
-		"deviceId":        data["deviceId"],
+		"roles":           data["roles"],
 	}
 
 	// Create token using secret key
@@ -44,6 +47,7 @@ func JwtDecode(tokenString string) (map[string]interface{}, error) {
 		return []byte(appSecretKey), nil
 	})
 	if err != nil {
+		fmt.Printf("%v \n", err)
 		return nil, err
 	}
 
@@ -54,23 +58,14 @@ func JwtDecode(tokenString string) (map[string]interface{}, error) {
 		if userId, exists := claims["userId"]; exists {
 			data["userId"] = userId
 		}
-		if role, exists := claims["role"]; exists {
-			data["role"] = role
+		if roles, exists := claims["roles"]; exists {
+			data["roles"] = roles
 		}
 		if isAuthenticated, exists := claims["isAuthenticated"]; exists {
 			data["isAuthenticated"] = isAuthenticated
 		}
 		if email, exists := claims["email"]; exists {
 			data["email"] = email
-		}
-		if businessId, exists := claims["businessId"]; exists {
-			data["businessId"] = businessId
-		}
-		if businessLocations, exists := claims["businessLocations"]; exists {
-			data["businessLocations"] = businessLocations
-		}
-		if deviceId, exists := claims["deviceId"]; exists {
-			data["deviceId"] = deviceId
 		}
 
 		return data, nil
@@ -117,4 +112,17 @@ func String(data interface{}) string {
 		}
 		return string(bytes)
 	}
+}
+
+// generateID creates a random ID with a 'phi' prefix, using lowercase alphanumeric characters.
+// The total length is 25 characters (3 for 'phi' + 22 random characters).
+func GenerateID() string {
+	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+	const idLength = 22 // Length of random part (total length 25 - 3 for 'phi')
+
+	// Generate a random string of 22 characters
+	id, _ := gonanoid.Generate(alphabet, idLength)
+
+	// Return the ID with 'phi' prefix
+	return "phi" + id
 }

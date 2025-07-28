@@ -1,0 +1,21 @@
+# Production - HTTPS
+https://phinex.blog.epsierra.com {
+    reverse_proxy api:5000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up Host {upstream_host}
+    }
+}
+
+# Local Development - HTTP
+:80 {
+    reverse_proxy api:5000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up Host {upstream_host}
+    }
+}

@@ -1,0 +1,1518 @@
+basePath: /
+definitions:
+  auth.GetTokenDto:
+    properties:
+      email:
+        example: ingshelpidy@gmail.com
+        type: string
+    required:
+    - email
+    type: object
+  auth.TokenResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user: {}
+    type: object
+  blogs.BlogWithMeta:
+    properties:
+      blog:
+        $ref: '#/definitions/models.Blog'
+      commentsCount:
+        type: integer
+      liked:
+        type: boolean
+      likesCount:
+        type: integer
+      reposted:
+        type: boolean
+      repostsCount:
+        type: integer
+    type: object
+  blogs.CreateBlogDto:
+    properties:
+      RepostedFromBlogId:
+        example: some-other-blog-id
+        type: string
+      externalLink:
+        example: https://example.com/related-article
+        type: string
+      externalLinkTitle:
+        example: Related Article
+        type: string
+      images:
+        example:
+        - https://example.com/image1.jpg
+        - https://example.com/image2.jpg
+        items:
+          type: string
+        type: array
+      slug:
+        example: my-first-blog-post
+        type: string
+      text:
+        example: This is the content of my first blog post.
+        type: string
+      title:
+        example: My First Blog Post
+        type: string
+      url:
+        example: /blogs/my-first-blog-post
+        type: string
+      video:
+        example: https://example.com/video.mp4
+        type: string
+    required:
+    - slug
+    - text
+    - title
+    - url
+    type: object
+  blogs.CreateCommentDto:
+    properties:
+      image:
+        example: https://example.com/comment-image.jpg
+        type: string
+      sticker:
+        example: smiley_face
+        type: string
+      text:
+        example: This is a great post!
+        type: string
+      video:
+        example: https://example.com/comment-video.mp4
+        type: string
+    required:
+    - text
+    type: object
+  blogs.CreateReplyDto:
+    properties:
+      image:
+        example: https://example.com/reply-image.jpg
+        type: string
+      sticker:
+        example: thumbs_up
+        type: string
+      text:
+        example: I agree!
+        type: string
+      video:
+        example: https://example.com/reply-video.mp4
+        type: string
+    required:
+    - text
+    type: object
+  blogs.LikeResponse:
+    properties:
+      liked:
+        type: boolean
+      likesCount:
+        type: integer
+    type: object
+  blogs.MutationResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  blogs.UpdateBlogDto:
+    properties:
+      externalLink:
+        example: https://example.com/another-related-article
+        type: string
+      externalLinkTitle:
+        example: Another Related Article
+        type: string
+      images:
+        example:
+        - https://example.com/image3.jpg
+        items:
+          type: string
+        type: array
+      slug:
+        example: my-updated-blog-post
+        type: string
+      text:
+        example: This is the updated content of my blog post.
+        type: string
+      title:
+        example: My Updated Blog Post
+        type: string
+      url:
+        example: /blogs/my-updated-blog-post
+        type: string
+      video:
+        example: https://example.com/updated-video.mp4
+        type: string
+    type: object
+  models.Blog:
+    properties:
+      blogId:
+        type: string
+      blogIdSerial:
+        type: integer
+      comments:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      externalLink:
+        type: string
+      externalLinkTitle:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      likes:
+        items:
+          $ref: '#/definitions/models.Like'
+        type: array
+      shares:
+        items:
+          $ref: '#/definitions/models.Share'
+        type: array
+      slug:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      url:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+      video:
+        type: string
+    type: object
+  models.Comment:
+    properties:
+      commentId:
+        type: string
+      commentIdSerial:
+        type: integer
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      image:
+        type: string
+      refId:
+        type: string
+      sticker:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+      video:
+        type: string
+    type: object
+  models.ErrorResponse:
+    description: Error response structure with a message.
+    properties:
+      message:
+        type: string
+    type: object
+  models.Follow:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      followId:
+        type: string
+      followIdSerial:
+        type: integer
+      follower:
+        $ref: '#/definitions/models.User'
+      followerId:
+        type: string
+      following:
+        $ref: '#/definitions/models.User'
+      followingId:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+    type: object
+  models.Like:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      likeId:
+        type: string
+      likeIdSerial:
+        type: integer
+      refId:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+    type: object
+  models.PaginatedResponse:
+    properties:
+      data: {}
+      metadata:
+        $ref: '#/definitions/models.PaginationMetadata'
+    type: object
+  models.PaginationMetadata:
+    properties:
+      currentPage:
+        type: integer
+      hasNextPage:
+        type: boolean
+      hasPreviousPage:
+        type: boolean
+      itemsPerPage:
+        type: integer
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  models.Role:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      roleId:
+        type: string
+      roleIdSerial:
+        type: integer
+      roleName:
+        $ref: '#/definitions/models.RoleName'
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      userRoles:
+        description: Relationships
+        items:
+          $ref: '#/definitions/models.UserRole'
+        type: array
+    type: object
+  models.RoleName:
+    enum:
+    - Authenticated
+    - Anonymous
+    - BusinessOwner
+    - SuperAdmin
+    - PaymentAgent
+    - Admin
+    type: string
+    x-enum-varnames:
+    - RoleNameAuthenticated
+    - RoleNameAnonymous
+    - RoleNameBusinessOwner
+    - RoleNameSuperAdmin
+    - RoleNamePaymentAgent
+    - RoleNameAdmin
+  models.Share:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      refId:
+        type: string
+      shareId:
+        type: string
+      shareIdSerial:
+        type: integer
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+    type: object
+  models.User:
+    properties:
+      bio:
+        type: string
+      blogs:
+        description: Relationships
+        items:
+          $ref: '#/definitions/models.Blog'
+        type: array
+      comments:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      dob:
+        type: string
+      email:
+        type: string
+      emailIsVerified:
+        type: boolean
+      firstName:
+        type: string
+      followers:
+        items:
+          $ref: '#/definitions/models.Follow'
+        type: array
+      followings:
+        items:
+          $ref: '#/definitions/models.Follow'
+        type: array
+      fullName:
+        type: string
+      gender:
+        type: string
+      lastName:
+        type: string
+      likes:
+        items:
+          $ref: '#/definitions/models.Like'
+        type: array
+      middleName:
+        type: string
+      password:
+        type: string
+      phoneNumber:
+        type: string
+      phoneNumberIsVerified:
+        type: boolean
+      profileImage:
+        type: string
+      shares:
+        items:
+          $ref: '#/definitions/models.Share'
+        type: array
+      status:
+        $ref: '#/definitions/models.UserStatus'
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      userId:
+        type: string
+      userIdSerial:
+        type: integer
+      userName:
+        type: string
+      userRoles:
+        items:
+          $ref: '#/definitions/models.UserRole'
+        type: array
+      verified:
+        type: boolean
+    type: object
+  models.UserRole:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      role:
+        $ref: '#/definitions/models.Role'
+      roleId:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Relationships
+      userId:
+        type: string
+      userRoleId:
+        type: string
+      userRoleIdSerial:
+        type: integer
+    type: object
+  models.UserStatus:
+    enum:
+    - active
+    - banned
+    - suspended
+    - online
+    type: string
+    x-enum-varnames:
+    - UserStatusActive
+    - UserStatusBanned
+    - UserStatusSuspended
+    - UserStatusOnline
+  users.CreateUserDto:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - fullName
+    - password
+    type: object
+  users.FollowResponse:
+    properties:
+      followed:
+        type: boolean
+    type: object
+  users.FollowUnfollowDto:
+    properties:
+      followerId:
+        example: user-id-1
+        type: string
+      followingId:
+        example: user-id-2
+        type: string
+    required:
+    - followerId
+    - followingId
+    type: object
+  users.UpdateUserDto:
+    properties:
+      dob:
+        example: "1990-01-01"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      gender:
+        example: Male
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      password:
+        example: newpassword123
+        minLength: 6
+        type: string
+    type: object
+  users.UserResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  users.UserWithMeta:
+    properties:
+      followersCount:
+        type: integer
+      followingsCount:
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+host: localhost:5005
+info:
+  contact: {}
+  description: This is the API documentation for the Phinex Blog Application.
+  license:
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Phinex Blog API
+  version: "1.0"
+paths:
+  /auth/token:
+    post:
+      consumes:
+      - application/json
+      description: Generates a JWT token for a verified user by email.
+      parameters:
+      - description: User email for token generation
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/auth.GetTokenDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get JWT token by email
+      tags:
+      - Auth
+  /blogs:
+    get:
+      consumes:
+      - application/json
+      description: Get all blogs with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all blogs
+      tags:
+      - Blogs
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog post
+      parameters:
+      - description: Blog object to be created
+        in: body
+        name: blog
+        required: true
+        schema:
+          $ref: '#/definitions/blogs.CreateBlogDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/blogs.MutationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new blog
+      tags:
+      - Blogs
+  /blogs/{blogId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a blog post by its ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a blog
+      tags:
+      - Blogs
+    get:
+      consumes:
+      - application/json
+      description: Get a single blog by its ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/blogs.BlogWithMeta'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a single blog by ID
+      tags:
+      - Blogs
+    put:
+      consumes:
+      - application/json
+      description: Update a blog post by its ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      - description: Blog object to be updated
+        in: body
+        name: blog
+        required: true
+        schema:
+          $ref: '#/definitions/blogs.UpdateBlogDto'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/blogs.MutationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update an existing blog
+      tags:
+      - Blogs
+  /blogs/{blogId}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Get all comments for a specific blog with pagination
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get comments for a blog
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: Add a comment to a blog post by its ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      - description: Comment object to be created
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/blogs.CreateCommentDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/blogs.MutationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a comment to a blog
+      tags:
+      - Comments
+  /blogs/{blogId}/follows/likes:
+    get:
+      consumes:
+      - application/json
+      description: Get all likes and followed or followers that like a specific blog
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get likes and followers for a blog
+      tags:
+      - Blogs
+  /blogs/{blogId}/likes:
+    put:
+      consumes:
+      - application/json
+      description: Like and/or unlike a blog post by its ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: blogId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/blogs.LikeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Like or unlike a blog
+      tags:
+      - Blogs
+  /comments/{commentId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a comment
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: Update a comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - description: Comment object to be updated
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/blogs.CreateCommentDto'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/blogs.MutationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a comment
+      tags:
+      - Comments
+  /comments/{commentId}/likes:
+    get:
+      consumes:
+      - application/json
+      description: Get all likes for a specific comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Like'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get comment likes
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: Like and/or unlike a comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/blogs.LikeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Like or unlike a comment
+      tags:
+      - Comments
+  /comments/{commentId}/replies:
+    get:
+      consumes:
+      - application/json
+      description: Get all replies for a specific comment with pagination
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get replies for a comment
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: Add a reply to a comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - description: Reply object to be created
+        in: body
+        name: reply
+        required: true
+        schema:
+          $ref: '#/definitions/blogs.CreateReplyDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/blogs.MutationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a reply to a comment
+      tags:
+      - Comments
+  /sessions/blogs:
+    get:
+      consumes:
+      - application/json
+      description: Get blogs from followed users or the current user with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get session blogs
+      tags:
+      - Blogs
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get all users with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided details
+      parameters:
+      - description: User object to be created
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.CreateUserDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get a single user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserWithMeta'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update a user's details by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: User object with updated fields
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.UpdateUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a user
+      tags:
+      - Users
+  /users/{userId}/blogs:
+    get:
+      consumes:
+      - application/json
+      description: Get all blogs by a specific user with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user blogs
+      tags:
+      - Blogs
+  /users/{userId}/followers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the followers of a specific user with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user followers
+      tags:
+      - Users
+  /users/{userId}/followings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a user's followings with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user followings
+      tags:
+      - Users
+  /users/{userId}/unfollowings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves users who are not followed by a specific user with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users not following
+      tags:
+      - Users
+  /users/follows:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to follow or unfollow another user
+      parameters:
+      - description: Follow/Unfollow object
+        in: body
+        name: follow
+        required: true
+        schema:
+          $ref: '#/definitions/users.FollowUnfollowDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.FollowResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Follow or unfollow a user
+      tags:
+      - Users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

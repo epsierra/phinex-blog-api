@@ -1,0 +1,12 @@
+{
+  "data": null,
+  "metadata": {
+    "currentPage": 1,
+    "itemsPerPage": 10,
+    "totalItems": 0,
+    "totalPages": 0,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+
+}
