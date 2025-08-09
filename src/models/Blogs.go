@@ -17,6 +17,7 @@ type Blog struct {
 	Text              string          `gorm:"type:text;column:text" json:"text"`
 	Images            json.RawMessage `gorm:"type:json;column:images" json:"images"`
 	Video             string          `gorm:"type:text;column:video" json:"video"`
+	Audio             string          `gorm:"type:text;column:audio" json:"audio"`
 	CreatedAt         time.Time       `gorm:"not null;column:created_at" json:"createdAt"`
 	UpdatedAt         time.Time       `gorm:"not null;column:updated_at" json:"updatedAt"`
 	CreatedBy         string          `gorm:"type:varchar(80);not null;column:created_by" json:"createdBy"`

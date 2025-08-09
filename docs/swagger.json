@@ -169,6 +169,50 @@
                 }
             }
         },
+        "/blogs/pinned": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all pinned blogs with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blogs"
+                ],
+                "summary": "Get pinned blogs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/blogs/{blogId}": {
             "get": {
                 "security": [
@@ -312,8 +356,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -656,8 +700,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -916,7 +960,7 @@
                 }
             }
         },
-        "/sessions/blogs": {
+        "/following-blogs": {
             "get": {
                 "security": [
                     {
@@ -967,7 +1011,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all users with pagination",
+                "description": "Get all users with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -992,6 +1036,12 @@
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -999,6 +1049,12 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1142,7 +1198,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.UserWithMeta"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "404": {
@@ -1195,8 +1251,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/users.UserResponse"
                         }
@@ -1248,8 +1304,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "$ref": "#/definitions/users.UserResponse"
                         }
@@ -1339,7 +1395,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves the followers of a specific user with pagination",
+                "description": "Retrieves the followers of a specific user with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1371,6 +1427,12 @@
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1378,6 +1440,12 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1396,7 +1464,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a user's followings with pagination",
+                "description": "Retrieves a user's followings with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1428,6 +1496,12 @@
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1435,6 +1509,12 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1453,7 +1533,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves users who are not followed by a specific user with pagination",
+                "description": "Retrieves users who are not followed by a specific user with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1485,6 +1565,12 @@
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1492,6 +1578,12 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1512,8 +1604,7 @@
             ],
             "properties": {
                 "email": {
-                    "type": "string",
-                    "example": "ingshelpidy@gmail.com"
+                    "type": "string"
                 }
             }
         },
@@ -1526,7 +1617,9 @@
                 "token": {
                     "type": "string"
                 },
-                "user": {}
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                }
             }
         },
         "blogs.BlogWithMeta": {
@@ -1549,16 +1642,17 @@
                 },
                 "repostsCount": {
                     "type": "integer"
+                },
+                "viewsCount": {
+                    "type": "integer"
                 }
             }
         },
         "blogs.CreateBlogDto": {
             "type": "object",
             "required": [
-                "slug",
                 "text",
-                "title",
-                "url"
+                "title"
             ],
             "properties": {
                 "RepostedFromBlogId": {
@@ -1583,10 +1677,6 @@
                         "https://example.com/image2.jpg"
                     ]
                 },
-                "slug": {
-                    "type": "string",
-                    "example": "my-first-blog-post"
-                },
                 "text": {
                     "type": "string",
                     "example": "This is the content of my first blog post."
@@ -1594,10 +1684,6 @@
                 "title": {
                     "type": "string",
                     "example": "My First Blog Post"
-                },
-                "url": {
-                    "type": "string",
-                    "example": "/blogs/my-first-blog-post"
                 },
                 "video": {
                     "type": "string",
@@ -1693,10 +1779,6 @@
                         "https://example.com/image3.jpg"
                     ]
                 },
-                "slug": {
-                    "type": "string",
-                    "example": "my-updated-blog-post"
-                },
                 "text": {
                     "type": "string",
                     "example": "This is the updated content of my blog post."
@@ -1704,10 +1786,6 @@
                 "title": {
                     "type": "string",
                     "example": "My Updated Blog Post"
-                },
-                "url": {
-                    "type": "string",
-                    "example": "/blogs/my-updated-blog-post"
                 },
                 "video": {
                     "type": "string",
@@ -1721,14 +1799,14 @@
                 "blogId": {
                     "type": "string"
                 },
-                "blogIdSerial": {
-                    "type": "integer"
-                },
                 "comments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Comment"
                     }
+                },
+                "commentsCount": {
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -1748,17 +1826,26 @@
                         "type": "string"
                     }
                 },
+                "isReel": {
+                    "type": "boolean"
+                },
                 "likes": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Like"
                     }
                 },
+                "likesCount": {
+                    "type": "integer"
+                },
                 "shares": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Share"
                     }
+                },
+                "sharesCount": {
+                    "type": "integer"
                 },
                 "slug": {
                     "type": "string"
@@ -1786,6 +1873,15 @@
                 },
                 "video": {
                     "type": "string"
+                },
+                "views": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.View"
+                    }
+                },
+                "viewsCount": {
+                    "type": "integer"
                 }
             }
         },
@@ -1794,9 +1890,6 @@
             "properties": {
                 "commentId": {
                     "type": "string"
-                },
-                "commentIdSerial": {
-                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -1807,8 +1900,14 @@
                 "image": {
                     "type": "string"
                 },
+                "likesCount": {
+                    "type": "integer"
+                },
                 "refId": {
                     "type": "string"
+                },
+                "repliesCount": {
+                    "type": "integer"
                 },
                 "sticker": {
                     "type": "string"
@@ -1842,41 +1941,6 @@
                 }
             }
         },
-        "models.Follow": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "createdBy": {
-                    "type": "string"
-                },
-                "followId": {
-                    "type": "string"
-                },
-                "followIdSerial": {
-                    "type": "integer"
-                },
-                "follower": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "followerId": {
-                    "type": "string"
-                },
-                "following": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "followingId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "updatedBy": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Like": {
             "type": "object",
             "properties": {
@@ -1888,9 +1952,6 @@
                 },
                 "likeId": {
                     "type": "string"
-                },
-                "likeIdSerial": {
-                    "type": "integer"
                 },
                 "refId": {
                     "type": "string"
@@ -1953,9 +2014,6 @@
                 "roleId": {
                     "type": "string"
                 },
-                "roleIdSerial": {
-                    "type": "integer"
-                },
                 "roleName": {
                     "$ref": "#/definitions/models.RoleName"
                 },
@@ -2008,9 +2066,6 @@
                 "shareId": {
                     "type": "string"
                 },
-                "shareIdSerial": {
-                    "type": "integer"
-                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -2062,17 +2117,8 @@
                 "firstName": {
                     "type": "string"
                 },
-                "followers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Follow"
-                    }
-                },
-                "followings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Follow"
-                    }
+                "following": {
+                    "type": "boolean"
                 },
                 "fullName": {
                     "type": "string"
@@ -2122,9 +2168,6 @@
                 "userId": {
                     "type": "string"
                 },
-                "userIdSerial": {
-                    "type": "integer"
-                },
                 "userName": {
                     "type": "string"
                 },
@@ -2133,6 +2176,9 @@
                     "items": {
                         "$ref": "#/definitions/models.UserRole"
                     }
+                },
+                "usersStats": {
+                    "$ref": "#/definitions/models.UsersStats"
                 },
                 "verified": {
                     "type": "boolean"
@@ -2173,9 +2219,6 @@
                 },
                 "userRoleId": {
                     "type": "string"
-                },
-                "userRoleIdSerial": {
-                    "type": "integer"
                 }
             }
         },
@@ -2193,6 +2236,115 @@
                 "UserStatusSuspended",
                 "UserStatusOnline"
             ]
+        },
+        "models.UsersStats": {
+            "type": "object",
+            "properties": {
+                "approvedOrdersCount": {
+                    "type": "integer"
+                },
+                "approvedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "canceledOrdersCount": {
+                    "type": "integer"
+                },
+                "canceledPreOrdersCount": {
+                    "type": "integer"
+                },
+                "cartItemsCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "declinedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "deliveredOrdersCount": {
+                    "type": "integer"
+                },
+                "deliveredPreOrdersCount": {
+                    "type": "integer"
+                },
+                "followersCount": {
+                    "type": "integer"
+                },
+                "followingsCount": {
+                    "type": "integer"
+                },
+                "ordersCount": {
+                    "type": "integer"
+                },
+                "pendingOrdersCount": {
+                    "type": "integer"
+                },
+                "pendingPreOrdersCount": {
+                    "type": "integer"
+                },
+                "preOrdersCount": {
+                    "type": "integer"
+                },
+                "requestedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "totalLikes": {
+                    "type": "integer"
+                },
+                "totalPosts": {
+                    "type": "integer"
+                },
+                "unReadNotificationsCount": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "userStatsId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.View": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "refId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "viewId": {
+                    "type": "string"
+                }
+            }
         },
         "users.CreateUserDto": {
             "type": "object",
@@ -2282,20 +2434,6 @@
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "users.UserWithMeta": {
-            "type": "object",
-            "properties": {
-                "followersCount": {
-                    "type": "integer"
-                },
-                "followingsCount": {
-                    "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
                 }
             }
         }

@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/epsierra/phinex-blog-api/src/models"
@@ -81,14 +83,37 @@ func (s *UsersService) createUserStats(userId string, currentUser models.ICurren
 	return nil
 }
 
-// FindAllUsers retrieves all users with pagination
-func (s *UsersService) FindAllUsers(page, limit int, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+// FindAllUsers retrieves all users with pagination and optional search, ordered randomly with seed
+func (s *UsersService) FindAllUsers(page, limit int, search string, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+	// Set default values for page and limit if not provided or invalid
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+
+	// Set random seed based on current time for reproducible results
+	rand.Seed(time.Now().UnixNano())
+
 	var totalItems int64
-	s.db.Model(&models.User{}).Count(&totalItems)
+	query := s.db.Model(&models.User{})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("full_name LIKE ? OR email LIKE ? OR user_name LIKE ? OR bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	query.Count(&totalItems)
 
 	offset := (page - 1) * limit
 	var users []models.User
-	if err := s.db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := query.Order("RANDOM()").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		s.logger.Printf("Error fetching users: %v", err)
 		return models.PaginatedResponse{Data: []models.User{}}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Failed to fetch users"}
 	}
@@ -259,23 +284,52 @@ func (s *UsersService) FollowUnfollowUser(dto FollowUnfollowDto, currentUser mod
 	}, nil
 }
 
-// FindUsersNotFollowing retrieves users who are not followed by a specific user, ordered randomly
-func (s *UsersService) FindUsersNotFollowing(userId string, page, limit int, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+// FindUsersNotFollowing retrieves users who are not followed by a specific user, ordered randomly with seed
+func (s *UsersService) FindUsersNotFollowing(userId string, page, limit int, search string, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+	// Set default values for page and limit if not provided or invalid
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+
+	// Set random seed based on current time for reproducible results
+	rand.Seed(time.Now().UnixNano())
+
 	var totalItems int64
-	s.db.Model(&models.User{}).Count(&totalItems)
+	query := s.db.Model(&models.User{})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("full_name LIKE ? OR email LIKE ? OR user_name LIKE ? OR bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	query.Count(&totalItems)
 
 	offset := (page - 1) * limit
-
 	var ids []interface{}
-	// Get all followingIds where userId is the follower
 	s.db.Model(&models.Follow{}).Where(&models.Follow{FollowerId: userId}).Pluck("following_id", &ids)
 
-	// Fetch users who are not followed by the current user, ordered randomly
 	var users []models.User
-	err := s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.Not(clause.IN{Column: "user_id", Values: ids})}}).
-		Order("RANDOM()").
-		Limit(limit).Offset(offset).
-		Find(&users).Error
+	query = s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.Not(clause.IN{Column: "user_id", Values: ids})}})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("full_name LIKE ? OR email LIKE ? OR user_name LIKE ? OR bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	err := query.Order("RANDOM()").Limit(limit).Offset(offset).Find(&users).Error
 
 	if err != nil {
 		s.logger.Printf("Error fetching users not following: %v", err)
@@ -302,22 +356,53 @@ func (s *UsersService) FindUsersNotFollowing(userId string, page, limit int, cur
 	}, nil
 }
 
-// FindUserFollowers retrieves the followers of a specific user
-func (s *UsersService) FindUserFollowers(userId string, page, limit int, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+// FindUserFollowers retrieves the followers of a specific user, ordered randomly with seed
+func (s *UsersService) FindUserFollowers(userId string, page, limit int, search string, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+	// Set default values for page and limit if not provided or invalid
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+
+	// Set random seed based on current time for reproducible results
+	rand.Seed(time.Now().UnixNano())
+
 	var totalItems int64
-	s.db.Model(&models.Follow{}).Where(&models.Follow{FollowingId: userId}).Count(&totalItems)
+	query := s.db.Model(&models.Follow{}).Where(&models.Follow{FollowingId: userId})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		query = query.Joins("JOIN users ON users.user_id = follows.follower_id")
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("users.full_name LIKE ? OR users.email LIKE ? OR users.user_name LIKE ? OR users.bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	query.Count(&totalItems)
 
 	offset := (page - 1) * limit
-
 	var followerIds []interface{}
-	// Get all followerIds where userId is the followingId
 	s.db.Model(&models.Follow{}).Where(&models.Follow{FollowingId: userId}).Pluck("follower_id", &followerIds)
 
 	var users []models.User
-	err := s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.IN{Column: "user_id", Values: followerIds}}}).
-		Order("first_name").
-		Limit(limit).Offset(offset).
-		Find(&users).Error
+	query = s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.IN{Column: "user_id", Values: followerIds}}})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("full_name LIKE ? OR email LIKE ? OR user_name LIKE ? OR bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	err := query.Order("RANDOM()").Limit(limit).Offset(offset).Find(&users).Error
 
 	if err != nil {
 		s.logger.Printf("Error fetching user followers: %v", err)
@@ -344,21 +429,53 @@ func (s *UsersService) FindUserFollowers(userId string, page, limit int, current
 	}, nil
 }
 
-// FindUserFollowings retrieves a user's followings
-func (s *UsersService) FindUserFollowings(userId string, page, limit int, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+// FindUserFollowings retrieves a user's followings, ordered randomly with seed
+func (s *UsersService) FindUserFollowings(userId string, page, limit int, search string, currentUser models.ICurrentUser) (models.PaginatedResponse, error) {
+	// Set default values for page and limit if not provided or invalid
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+
+	// Set random seed based on current time for reproducible results
+	rand.Seed(time.Now().UnixNano())
+
 	var totalItems int64
-	s.db.Model(&models.Follow{}).Where(&models.Follow{FollowerId: userId}).Count(&totalItems)
+	query := s.db.Model(&models.Follow{}).Where(&models.Follow{FollowerId: userId})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		query = query.Joins("JOIN users ON users.user_id = follows.following_id")
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("users.full_name LIKE ? OR users.email LIKE ? OR users.user_name LIKE ? OR users.bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	query.Count(&totalItems)
 
 	offset := (page - 1) * limit
-
 	var followingIds []interface{}
 	s.db.Model(&models.Follow{}).Where(&models.Follow{FollowerId: userId}).Pluck("following_id", &followingIds)
 
 	var users []models.User
-	err := s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.IN{Column: "user_id", Values: followingIds}}}).
-		Order("first_name").
-		Limit(limit).Offset(offset).
-		Find(&users).Error
+	query = s.db.Clauses(clause.Where{Exprs: []clause.Expression{clause.IN{Column: "user_id", Values: followingIds}}})
+	if search != "" && len(search) <= 100 && search != "undefined" {
+		// Normalize search term: trim and split into words
+		searchTerms := strings.Fields(strings.TrimSpace(search))
+		for _, term := range searchTerms {
+			if term != "" {
+				searchPattern := "%" + term + "%"
+				query = query.Where("full_name LIKE ? OR email LIKE ? OR user_name LIKE ? OR bio LIKE ?",
+					searchPattern, searchPattern, searchPattern, searchPattern)
+			}
+		}
+	}
+	err := query.Order("RANDOM()").Limit(limit).Offset(offset).Find(&users).Error
 
 	if err != nil {
 		s.logger.Printf("Error fetching user followings: %v", err)

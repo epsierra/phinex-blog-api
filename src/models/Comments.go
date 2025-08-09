@@ -13,6 +13,7 @@ type Comment struct {
 	Image        string    `gorm:"type:text;column:image" json:"image"`
 	Sticker      string    `gorm:"type:text;column:sticker" json:"sticker"`
 	Video        string    `gorm:"type:text;column:video" json:"video"`
+	Audio        string    `gorm:"type:text;column:audio" json:"audio"`
 	CreatedAt    time.Time `gorm:"not null;column:created_at" json:"createdAt"`
 	UpdatedAt    time.Time `gorm:"not null;column:updated_at" json:"updatedAt"`
 	CreatedBy    string    `gorm:"type:varchar(80);not null;column:created_by" json:"createdBy"`

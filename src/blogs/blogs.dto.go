@@ -11,6 +11,7 @@ type CreateBlogDto struct {
 	Text               string   `json:"text" validate:"required" example:"This is the content of my first blog post."`
 	Images             []string `json:"images" example:"https://example.com/image1.jpg,https://example.com/image2.jpg"`
 	Video              string   `json:"video" example:"https://example.com/video.mp4"`
+	Audio              string   `json:"audio" example:"https://example.com/updated-audio.mp3"`
 	RepostedFromBlogId string   `json:"RepostedFromBlogId,omitempty" example:"some-other-blog-id"`
 }
 
@@ -22,6 +23,7 @@ type UpdateBlogDto struct {
 	Text              string   `json:"text" example:"This is the updated content of my blog post."`
 	Images            []string `json:"images" example:"https://example.com/image3.jpg"`
 	Video             string   `json:"video" example:"https://example.com/updated-video.mp4"`
+	Audio             string   `json:"audio" example:"https://example.com/updated-audio.mp3"`
 }
 
 // FollowUnfollowDto defines the input for follow/unfollow
@@ -42,6 +44,7 @@ type CreateCommentDto struct {
 	Text    string `json:"text" validate:"required" example:"This is a great post!"`
 	Image   string `json:"image,omitempty" example:"https://example.com/comment-image.jpg"`
 	Video   string `json:"video,omitempty" example:"https://example.com/comment-video.mp4"`
+	Audio   string `json:"audio" example:"https://example.com/updated-audio.mp3"`
 	Sticker string `json:"sticker,omitempty" example:"smiley_face"`
 }
 
@@ -50,6 +53,7 @@ type CreateReplyDto struct {
 	Text    string `json:"text" validate:"required" example:"I agree!"`
 	Image   string `json:"image,omitempty" example:"https://example.com/reply-image.jpg"`
 	Video   string `json:"video,omitempty" example:"https://example.com/reply-video.mp4"`
+	Audio   string `json:"audio" example:"https://example.com/updated-audio.mp3"`
 	Sticker string `json:"sticker,omitempty" example:"thumbs_up"`
 }
 

@@ -61,22 +61,25 @@ func (c *UsersController) CreateUser(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get all users
-// @Description Get all users with pagination
+// @Description Get all users with pagination and optional search
 // @Tags Users
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
+// @Param search query string false "Search term to filter users by full name, email, username, or bio"
 // @Success 200 {object} models.PaginatedResponse
+// @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /users [get]
 // @Security ApiKeyAuth
 func (c *UsersController) FindAllUsers(ctx *fiber.Ctx) error {
 	page, _ := strconv.Atoi(ctx.Query("page", "1"))
 	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	search := ctx.Query("search", "")
 	currentUser := ctx.Locals("user").(models.ICurrentUser)
 
-	users, err := c.service.FindAllUsers(page, limit, currentUser)
+	users, err := c.service.FindAllUsers(page, limit, search, currentUser)
 	if err != nil {
 		return err
 	}
@@ -181,14 +184,16 @@ func (c *UsersController) FollowUnfollowUser(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get users not following
-// @Description Retrieves users who are not followed by a specific user with pagination
+// @Description Retrieves users who are not followed by a specific user with pagination and optional search
 // @Tags Users
 // @Accept json
 // @Produce json
 // @Param userId path string true "User ID"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
+// @Param search query string false "Search term to filter users by full name, email, username, or bio"
 // @Success 200 {object} models.PaginatedResponse
+// @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /users/{userId}/unfollowings [get]
 // @Security ApiKeyAuth
@@ -196,9 +201,10 @@ func (c *UsersController) FindUsersNotFollowing(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	page, _ := strconv.Atoi(ctx.Query("page", "1"))
 	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	search := ctx.Query("search", "")
 	currentUser := ctx.Locals("user").(models.ICurrentUser)
 
-	users, err := c.service.FindUsersNotFollowing(userId, page, limit, currentUser)
+	users, err := c.service.FindUsersNotFollowing(userId, page, limit, search, currentUser)
 	if err != nil {
 		return err
 	}
@@ -206,14 +212,16 @@ func (c *UsersController) FindUsersNotFollowing(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get user followers
-// @Description Retrieves the followers of a specific user with pagination
+// @Description Retrieves the followers of a specific user with pagination and optional search
 // @Tags Users
 // @Accept json
 // @Produce json
 // @Param userId path string true "User ID"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
+// @Param search query string false "Search term to filter users by full name, email, username, or bio"
 // @Success 200 {object} models.PaginatedResponse
+// @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /users/{userId}/followers [get]
 // @Security ApiKeyAuth
@@ -221,9 +229,10 @@ func (c *UsersController) FindUserFollowers(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	page, _ := strconv.Atoi(ctx.Query("page", "1"))
 	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	search := ctx.Query("search", "")
 	currentUser := ctx.Locals("user").(models.ICurrentUser)
 
-	users, err := c.service.FindUserFollowers(userId, page, limit, currentUser)
+	users, err := c.service.FindUserFollowers(userId, page, limit, search, currentUser)
 	if err != nil {
 		return err
 	}
@@ -231,14 +240,16 @@ func (c *UsersController) FindUserFollowers(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get user followings
-// @Description Retrieves a user's followings with pagination
+// @Description Retrieves a user's followings with pagination and optional search
 // @Tags Users
 // @Accept json
 // @Produce json
 // @Param userId path string true "User ID"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
+// @Param search query string false "Search term to filter users by full name, email, username, or bio"
 // @Success 200 {object} models.PaginatedResponse
+// @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /users/{userId}/followings [get]
 // @Security ApiKeyAuth
@@ -246,9 +257,10 @@ func (c *UsersController) FindUserFollowings(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	page, _ := strconv.Atoi(ctx.Query("page", "1"))
 	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	search := ctx.Query("search", "")
 	currentUser := ctx.Locals("user").(models.ICurrentUser)
 
-	users, err := c.service.FindUserFollowings(userId, page, limit, currentUser)
+	users, err := c.service.FindUserFollowings(userId, page, limit, search, currentUser)
 	if err != nil {
 		return err
 	}

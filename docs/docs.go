@@ -175,6 +175,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/blogs/pinned": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all pinned blogs with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blogs"
+                ],
+                "summary": "Get pinned blogs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/blogs/{blogId}": {
             "get": {
                 "security": [
@@ -318,8 +362,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -662,8 +706,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -922,7 +966,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sessions/blogs": {
+        "/following-blogs": {
             "get": {
                 "security": [
                     {
@@ -973,7 +1017,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all users with pagination",
+                "description": "Get all users with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -998,6 +1042,12 @@ const docTemplate = `{
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1005,6 +1055,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1148,7 +1204,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.UserWithMeta"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "404": {
@@ -1201,8 +1257,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/users.UserResponse"
                         }
@@ -1254,8 +1310,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
                             "$ref": "#/definitions/users.UserResponse"
                         }
@@ -1345,7 +1401,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves the followers of a specific user with pagination",
+                "description": "Retrieves the followers of a specific user with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1377,6 +1433,12 @@ const docTemplate = `{
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1384,6 +1446,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1402,7 +1470,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a user's followings with pagination",
+                "description": "Retrieves a user's followings with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1434,6 +1502,12 @@ const docTemplate = `{
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1441,6 +1515,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1459,7 +1539,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves users who are not followed by a specific user with pagination",
+                "description": "Retrieves users who are not followed by a specific user with pagination and optional search",
                 "consumes": [
                     "application/json"
                 ],
@@ -1491,6 +1571,12 @@ const docTemplate = `{
                         "description": "Number of items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter users by full name, email, username, or bio",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1498,6 +1584,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1518,8 +1610,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string",
-                    "example": "ingshelpidy@gmail.com"
+                    "type": "string"
                 }
             }
         },
@@ -1532,7 +1623,9 @@ const docTemplate = `{
                 "token": {
                     "type": "string"
                 },
-                "user": {}
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                }
             }
         },
         "blogs.BlogWithMeta": {
@@ -1555,16 +1648,17 @@ const docTemplate = `{
                 },
                 "repostsCount": {
                     "type": "integer"
+                },
+                "viewsCount": {
+                    "type": "integer"
                 }
             }
         },
         "blogs.CreateBlogDto": {
             "type": "object",
             "required": [
-                "slug",
                 "text",
-                "title",
-                "url"
+                "title"
             ],
             "properties": {
                 "RepostedFromBlogId": {
@@ -1589,10 +1683,6 @@ const docTemplate = `{
                         "https://example.com/image2.jpg"
                     ]
                 },
-                "slug": {
-                    "type": "string",
-                    "example": "my-first-blog-post"
-                },
                 "text": {
                     "type": "string",
                     "example": "This is the content of my first blog post."
@@ -1600,10 +1690,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "My First Blog Post"
-                },
-                "url": {
-                    "type": "string",
-                    "example": "/blogs/my-first-blog-post"
                 },
                 "video": {
                     "type": "string",
@@ -1699,10 +1785,6 @@ const docTemplate = `{
                         "https://example.com/image3.jpg"
                     ]
                 },
-                "slug": {
-                    "type": "string",
-                    "example": "my-updated-blog-post"
-                },
                 "text": {
                     "type": "string",
                     "example": "This is the updated content of my blog post."
@@ -1710,10 +1792,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "My Updated Blog Post"
-                },
-                "url": {
-                    "type": "string",
-                    "example": "/blogs/my-updated-blog-post"
                 },
                 "video": {
                     "type": "string",
@@ -1727,14 +1805,14 @@ const docTemplate = `{
                 "blogId": {
                     "type": "string"
                 },
-                "blogIdSerial": {
-                    "type": "integer"
-                },
                 "comments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Comment"
                     }
+                },
+                "commentsCount": {
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -1754,17 +1832,26 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "isReel": {
+                    "type": "boolean"
+                },
                 "likes": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Like"
                     }
                 },
+                "likesCount": {
+                    "type": "integer"
+                },
                 "shares": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Share"
                     }
+                },
+                "sharesCount": {
+                    "type": "integer"
                 },
                 "slug": {
                     "type": "string"
@@ -1792,6 +1879,15 @@ const docTemplate = `{
                 },
                 "video": {
                     "type": "string"
+                },
+                "views": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.View"
+                    }
+                },
+                "viewsCount": {
+                    "type": "integer"
                 }
             }
         },
@@ -1800,9 +1896,6 @@ const docTemplate = `{
             "properties": {
                 "commentId": {
                     "type": "string"
-                },
-                "commentIdSerial": {
-                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -1813,8 +1906,14 @@ const docTemplate = `{
                 "image": {
                     "type": "string"
                 },
+                "likesCount": {
+                    "type": "integer"
+                },
                 "refId": {
                     "type": "string"
+                },
+                "repliesCount": {
+                    "type": "integer"
                 },
                 "sticker": {
                     "type": "string"
@@ -1848,41 +1947,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Follow": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "createdBy": {
-                    "type": "string"
-                },
-                "followId": {
-                    "type": "string"
-                },
-                "followIdSerial": {
-                    "type": "integer"
-                },
-                "follower": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "followerId": {
-                    "type": "string"
-                },
-                "following": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "followingId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "updatedBy": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Like": {
             "type": "object",
             "properties": {
@@ -1894,9 +1958,6 @@ const docTemplate = `{
                 },
                 "likeId": {
                     "type": "string"
-                },
-                "likeIdSerial": {
-                    "type": "integer"
                 },
                 "refId": {
                     "type": "string"
@@ -1959,9 +2020,6 @@ const docTemplate = `{
                 "roleId": {
                     "type": "string"
                 },
-                "roleIdSerial": {
-                    "type": "integer"
-                },
                 "roleName": {
                     "$ref": "#/definitions/models.RoleName"
                 },
@@ -2014,9 +2072,6 @@ const docTemplate = `{
                 "shareId": {
                     "type": "string"
                 },
-                "shareIdSerial": {
-                    "type": "integer"
-                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -2068,17 +2123,8 @@ const docTemplate = `{
                 "firstName": {
                     "type": "string"
                 },
-                "followers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Follow"
-                    }
-                },
-                "followings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Follow"
-                    }
+                "following": {
+                    "type": "boolean"
                 },
                 "fullName": {
                     "type": "string"
@@ -2128,9 +2174,6 @@ const docTemplate = `{
                 "userId": {
                     "type": "string"
                 },
-                "userIdSerial": {
-                    "type": "integer"
-                },
                 "userName": {
                     "type": "string"
                 },
@@ -2139,6 +2182,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.UserRole"
                     }
+                },
+                "usersStats": {
+                    "$ref": "#/definitions/models.UsersStats"
                 },
                 "verified": {
                     "type": "boolean"
@@ -2179,9 +2225,6 @@ const docTemplate = `{
                 },
                 "userRoleId": {
                     "type": "string"
-                },
-                "userRoleIdSerial": {
-                    "type": "integer"
                 }
             }
         },
@@ -2199,6 +2242,115 @@ const docTemplate = `{
                 "UserStatusSuspended",
                 "UserStatusOnline"
             ]
+        },
+        "models.UsersStats": {
+            "type": "object",
+            "properties": {
+                "approvedOrdersCount": {
+                    "type": "integer"
+                },
+                "approvedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "canceledOrdersCount": {
+                    "type": "integer"
+                },
+                "canceledPreOrdersCount": {
+                    "type": "integer"
+                },
+                "cartItemsCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "declinedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "deliveredOrdersCount": {
+                    "type": "integer"
+                },
+                "deliveredPreOrdersCount": {
+                    "type": "integer"
+                },
+                "followersCount": {
+                    "type": "integer"
+                },
+                "followingsCount": {
+                    "type": "integer"
+                },
+                "ordersCount": {
+                    "type": "integer"
+                },
+                "pendingOrdersCount": {
+                    "type": "integer"
+                },
+                "pendingPreOrdersCount": {
+                    "type": "integer"
+                },
+                "preOrdersCount": {
+                    "type": "integer"
+                },
+                "requestedPreOrdersCount": {
+                    "type": "integer"
+                },
+                "totalLikes": {
+                    "type": "integer"
+                },
+                "totalPosts": {
+                    "type": "integer"
+                },
+                "unReadNotificationsCount": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "userStatsId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.View": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "refId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "viewId": {
+                    "type": "string"
+                }
+            }
         },
         "users.CreateUserDto": {
             "type": "object",
@@ -2288,20 +2440,6 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "users.UserWithMeta": {
-            "type": "object",
-            "properties": {
-                "followersCount": {
-                    "type": "integer"
-                },
-                "followingsCount": {
-                    "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
                 }
             }
         }

@@ -3,7 +3,6 @@ definitions:
   auth.GetTokenDto:
     properties:
       email:
-        example: ingshelpidy@gmail.com
         type: string
     required:
     - email
@@ -14,7 +13,8 @@ definitions:
         type: string
       token:
         type: string
-      user: {}
+      user:
+        $ref: '#/definitions/models.User'
     type: object
   blogs.BlogWithMeta:
     properties:
@@ -29,6 +29,8 @@ definitions:
       reposted:
         type: boolean
       repostsCount:
+        type: integer
+      viewsCount:
         type: integer
     type: object
   blogs.CreateBlogDto:
@@ -49,26 +51,18 @@ definitions:
         items:
           type: string
         type: array
-      slug:
-        example: my-first-blog-post
-        type: string
       text:
         example: This is the content of my first blog post.
         type: string
       title:
         example: My First Blog Post
         type: string
-      url:
-        example: /blogs/my-first-blog-post
-        type: string
       video:
         example: https://example.com/video.mp4
         type: string
     required:
-    - slug
     - text
     - title
-    - url
     type: object
   blogs.CreateCommentDto:
     properties:
@@ -131,17 +125,11 @@ definitions:
         items:
           type: string
         type: array
-      slug:
-        example: my-updated-blog-post
-        type: string
       text:
         example: This is the updated content of my blog post.
         type: string
       title:
         example: My Updated Blog Post
-        type: string
-      url:
-        example: /blogs/my-updated-blog-post
         type: string
       video:
         example: https://example.com/updated-video.mp4
@@ -151,12 +139,12 @@ definitions:
     properties:
       blogId:
         type: string
-      blogIdSerial:
-        type: integer
       comments:
         items:
           $ref: '#/definitions/models.Comment'
         type: array
+      commentsCount:
+        type: integer
       createdAt:
         type: string
       createdBy:
@@ -169,14 +157,20 @@ definitions:
         items:
           type: string
         type: array
+      isReel:
+        type: boolean
       likes:
         items:
           $ref: '#/definitions/models.Like'
         type: array
+      likesCount:
+        type: integer
       shares:
         items:
           $ref: '#/definitions/models.Share'
         type: array
+      sharesCount:
+        type: integer
       slug:
         type: string
       text:
@@ -195,21 +189,29 @@ definitions:
         type: string
       video:
         type: string
+      views:
+        items:
+          $ref: '#/definitions/models.View'
+        type: array
+      viewsCount:
+        type: integer
     type: object
   models.Comment:
     properties:
       commentId:
         type: string
-      commentIdSerial:
-        type: integer
       createdAt:
         type: string
       createdBy:
         type: string
       image:
         type: string
+      likesCount:
+        type: integer
       refId:
         type: string
+      repliesCount:
+        type: integer
       sticker:
         type: string
       text:
@@ -231,29 +233,6 @@ definitions:
       message:
         type: string
     type: object
-  models.Follow:
-    properties:
-      createdAt:
-        type: string
-      createdBy:
-        type: string
-      followId:
-        type: string
-      followIdSerial:
-        type: integer
-      follower:
-        $ref: '#/definitions/models.User'
-      followerId:
-        type: string
-      following:
-        $ref: '#/definitions/models.User'
-      followingId:
-        type: string
-      updatedAt:
-        type: string
-      updatedBy:
-        type: string
-    type: object
   models.Like:
     properties:
       createdAt:
@@ -262,8 +241,6 @@ definitions:
         type: string
       likeId:
         type: string
-      likeIdSerial:
-        type: integer
       refId:
         type: string
       updatedAt:
@@ -304,8 +281,6 @@ definitions:
         type: string
       roleId:
         type: string
-      roleIdSerial:
-        type: integer
       roleName:
         $ref: '#/definitions/models.RoleName'
       updatedAt:
@@ -344,8 +319,6 @@ definitions:
         type: string
       shareId:
         type: string
-      shareIdSerial:
-        type: integer
       updatedAt:
         type: string
       updatedBy:
@@ -380,14 +353,8 @@ definitions:
         type: boolean
       firstName:
         type: string
-      followers:
-        items:
-          $ref: '#/definitions/models.Follow'
-        type: array
-      followings:
-        items:
-          $ref: '#/definitions/models.Follow'
-        type: array
+      following:
+        type: boolean
       fullName:
         type: string
       gender:
@@ -420,14 +387,14 @@ definitions:
         type: string
       userId:
         type: string
-      userIdSerial:
-        type: integer
       userName:
         type: string
       userRoles:
         items:
           $ref: '#/definitions/models.UserRole'
         type: array
+      usersStats:
+        $ref: '#/definitions/models.UsersStats'
       verified:
         type: boolean
     type: object
@@ -453,8 +420,6 @@ definitions:
         type: string
       userRoleId:
         type: string
-      userRoleIdSerial:
-        type: integer
     type: object
   models.UserStatus:
     enum:
@@ -468,6 +433,78 @@ definitions:
     - UserStatusBanned
     - UserStatusSuspended
     - UserStatusOnline
+  models.UsersStats:
+    properties:
+      approvedOrdersCount:
+        type: integer
+      approvedPreOrdersCount:
+        type: integer
+      canceledOrdersCount:
+        type: integer
+      canceledPreOrdersCount:
+        type: integer
+      cartItemsCount:
+        type: integer
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      declinedPreOrdersCount:
+        type: integer
+      deliveredOrdersCount:
+        type: integer
+      deliveredPreOrdersCount:
+        type: integer
+      followersCount:
+        type: integer
+      followingsCount:
+        type: integer
+      ordersCount:
+        type: integer
+      pendingOrdersCount:
+        type: integer
+      pendingPreOrdersCount:
+        type: integer
+      preOrdersCount:
+        type: integer
+      requestedPreOrdersCount:
+        type: integer
+      totalLikes:
+        type: integer
+      totalPosts:
+        type: integer
+      unReadNotificationsCount:
+        type: integer
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+      userStatsId:
+        type: string
+    type: object
+  models.View:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      refId:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: string
+      viewId:
+        type: string
+    type: object
   users.CreateUserDto:
     properties:
       email:
@@ -532,15 +569,6 @@ definitions:
       data: {}
       message:
         type: string
-    type: object
-  users.UserWithMeta:
-    properties:
-      followersCount:
-        type: integer
-      followingsCount:
-        type: integer
-      user:
-        $ref: '#/definitions/models.User'
     type: object
 host: localhost:5005
 info:
@@ -666,8 +694,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
             additionalProperties:
               type: string
@@ -903,6 +931,34 @@ paths:
       summary: Like or unlike a blog
       tags:
       - Blogs
+  /blogs/pinned:
+    get:
+      consumes:
+      - application/json
+      description: Get all pinned blogs with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get pinned blogs
+      tags:
+      - Blogs
   /comments/{commentId}:
     delete:
       consumes:
@@ -917,8 +973,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
             additionalProperties:
               type: string
@@ -1132,7 +1188,7 @@ paths:
       summary: Add a reply to a comment
       tags:
       - Comments
-  /sessions/blogs:
+  /following-blogs:
     get:
       consumes:
       - application/json
@@ -1164,7 +1220,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get all users with pagination
+      description: Get all users with pagination and optional search
       parameters:
       - default: 1
         description: Page number
@@ -1176,6 +1232,11 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Search term to filter users by full name, email, username, or
+          bio
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -1183,6 +1244,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1235,8 +1300,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
             $ref: '#/definitions/users.UserResponse'
         "404":
@@ -1268,7 +1333,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/users.UserWithMeta'
+            $ref: '#/definitions/models.User'
         "404":
           description: Not Found
           schema:
@@ -1301,8 +1366,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           schema:
             $ref: '#/definitions/users.UserResponse'
         "400":
@@ -1367,7 +1432,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves the followers of a specific user with pagination
+      description: Retrieves the followers of a specific user with pagination and
+        optional search
       parameters:
       - description: User ID
         in: path
@@ -1384,6 +1450,11 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Search term to filter users by full name, email, username, or
+          bio
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -1391,6 +1462,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1404,7 +1479,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a user's followings with pagination
+      description: Retrieves a user's followings with pagination and optional search
       parameters:
       - description: User ID
         in: path
@@ -1421,6 +1496,11 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Search term to filter users by full name, email, username, or
+          bio
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -1428,6 +1508,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1442,6 +1526,7 @@ paths:
       consumes:
       - application/json
       description: Retrieves users who are not followed by a specific user with pagination
+        and optional search
       parameters:
       - description: User ID
         in: path
@@ -1458,6 +1543,11 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Search term to filter users by full name, email, username, or
+          bio
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -1465,6 +1555,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:

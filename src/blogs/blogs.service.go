@@ -29,7 +29,7 @@ func NewBlogsService(db *gorm.DB) *BlogsService {
 	}
 }
 
-// FindAll retrieves all blogs randomly
+// FindAll retrieves all blogs ordered by created_at descending
 func (s *BlogsService) FindAll(currentUser models.ICurrentUser, page, limit int) (models.PaginatedResponse, error) {
 	var totalItems int64
 	s.db.Model(&models.Blog{}).Count(&totalItems)
@@ -38,7 +38,7 @@ func (s *BlogsService) FindAll(currentUser models.ICurrentUser, page, limit int)
 	var blogs []models.Blog
 	err := s.db.Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("profile_image", "full_name", "user_id", "email", "verified")
-	}).Order("RANDOM()").Limit(limit).Offset(offset).Find(&blogs).Error
+	}).Order(clause.OrderByColumn{Column: clause.Column{Name: "created_at"}, Desc: true}).Limit(limit).Offset(offset).Find(&blogs).Error
 	if err != nil {
 		s.logger.Printf("Error fetching blogs: %v", err)
 		return models.PaginatedResponse{Data: []BlogWithMeta{}}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Unable to fetch blogs"}
@@ -223,6 +223,7 @@ func (s *BlogsService) Create(dto CreateBlogDto, currentUser models.ICurrentUser
 			Text:              dto.Text,
 			Images:            imagesJSON,
 			Video:             dto.Video,
+			Audio:             dto.Audio,
 			IsReel:            dto.Video != "",
 			CreatedAt:         time.Now().UTC(),
 			UpdatedAt:         time.Now().UTC(),
@@ -311,6 +312,10 @@ func (s *BlogsService) Update(blogId string, dto UpdateBlogDto, currentUser mode
 			updateData["video"] = dto.Video
 			updateData["is_reel"] = true
 		}
+
+		if dto.Audio != "" {
+			updateData["audio"] = dto.Audio
+		}
 		return tx.Model(&blog).Updates(updateData).Error
 	})
 	if err != nil {
@@ -396,7 +401,7 @@ func (s *BlogsService) LikeBlog(blogId string, currentUser models.ICurrentUser) 
 				return err
 			}
 
-			return tx.Model(&models.UsersStats{}).Where("user_id = ?", currentUser.UserId).Update("total_likes", gorm.Expr("total_likes - 1")).First(&blog).Error
+			return tx.Model(&models.UsersStats{}).Where("user_id = ?", currentUser.UserId).Update("total_likes", gorm.Expr("total_likes - 1")).Error
 		}
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
@@ -427,10 +432,6 @@ func (s *BlogsService) LikeBlog(blogId string, currentUser models.ICurrentUser) 
 		return LikeResponse{}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Failed to like/unlike blog"}
 	}
 
-	// var likesCount int64
-	// s.db.Model(&models.Like{}).Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "ref_id", Value: blogId}}}).
-	// 	Count(&likesCount)
-
 	return LikeResponse{
 		Liked:      like.LikeId == "",
 		LikesCount: blog.LikesCount,
@@ -449,6 +450,7 @@ func (s *BlogsService) AddComment(blogId string, dto CreateCommentDto, currentUs
 			Text:      dto.Text,
 			Image:     dto.Image,
 			Video:     dto.Video,
+			Audio:     dto.Audio,
 			Sticker:   dto.Sticker,
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
@@ -556,9 +558,7 @@ func (s *BlogsService) DeleteComment(commentId string, currentUser models.ICurre
 func (s *BlogsService) UpdateComment(commentId string, dto CreateCommentDto, currentUser models.ICurrentUser) (MutationResponse, error) {
 	var comment models.Comment
 	err := s.db.Transaction(func(tx *gorm.DB) error {
-		err := tx.Preload("User", func(db *gorm.DB) *gorm.DB {
-			return db.Select("profile_image", "full_name", "user_id", "email", "verified")
-		}).Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "comment_id", Value: commentId}}}).
+		err := tx.Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "comment_id", Value: commentId}}}).
 			First(&comment).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -567,15 +567,27 @@ func (s *BlogsService) UpdateComment(commentId string, dto CreateCommentDto, cur
 			return err
 		}
 
-		comment := models.Comment{
-			Text:      dto.Text,
-			Image:     dto.Image,
-			Video:     dto.Video,
-			UpdatedAt: time.Now().UTC(),
-			UpdatedBy: currentUser.FullName,
+		updateData := map[string]interface{}{
+			"updated_at": time.Now().UTC(),
+			"updated_by": currentUser.FullName,
+		}
+		if dto.Text != "" {
+			updateData["text"] = dto.Text
+		}
+		if dto.Image != "" {
+			updateData["image"] = dto.Image
+		}
+		if dto.Video != "" {
+			updateData["video"] = dto.Video
+		}
+		if dto.Audio != "" {
+			updateData["audio"] = dto.Audio
+		}
+		if dto.Sticker != "" {
+			updateData["sticker"] = dto.Sticker
 		}
 
-		return tx.Model(&comment).Where(models.Comment{CommentId: commentId}).Updates(comment).Error
+		return tx.Model(&comment).Updates(updateData).Error
 	})
 	if err != nil {
 		s.logger.Printf("Error updating comment: %v", err)
@@ -590,6 +602,57 @@ func (s *BlogsService) UpdateComment(commentId string, dto CreateCommentDto, cur
 		Data:    comment,
 	}, nil
 }
+
+// func (s *BlogsService) UpdateComment(commentId string, dto CreateCommentDto, currentUser models.ICurrentUser) (MutationResponse, error) {
+// 	var comment models.Comment
+// 	err := s.db.Transaction(func(tx *gorm.DB) error {
+// 		// First, check if comment exists and preload User
+// 		err := tx.Preload("User", func(db *gorm.DB) *gorm.DB {
+// 			return db.Select("profile_image", "full_name", "user_id", "email", "verified")
+// 		}).Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "comment_id", Value: commentId}}}).
+// 			First(&comment).Error
+// 		if err != nil {
+// 			if errors.Is(err, gorm.ErrRecordNotFound) {
+// 				return &fiber.Error{Code: fiber.StatusNotFound, Message: fmt.Sprintf("Comment with ID %s does not exist", commentId)}
+// 			}
+// 			return err
+// 		}
+
+// 		// Prepare update data
+// 		updateData := models.Comment{
+// 			Text:      dto.Text,
+// 			Image:     dto.Image,
+// 			Video:     dto.Video,
+// 			UpdatedAt: time.Now().UTC(),
+// 			UpdatedBy: currentUser.FullName,
+// 		}
+
+// 		// Perform update
+// 		err = tx.Model(&comment).Where(models.Comment{CommentId: commentId}).Updates(updateData).Error
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		// Fetch the updated comment
+// 		return tx.Preload("User", func(db *gorm.DB) *gorm.DB {
+// 			return db.Select("profile_image", "full_name", "user_id", "email", "verified")
+// 		}).Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "comment_id", Value: commentId}}}).
+// 			First(&comment).Error
+// 	})
+
+// 	if err != nil {
+// 		s.logger.Printf("Error updating comment: %v", err)
+// 		if fiberErr, ok := err.(*fiber.Error); ok {
+// 			return MutationResponse{}, fiberErr
+// 		}
+// 		return MutationResponse{}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Failed to update comment"}
+// 	}
+
+// 	return MutationResponse{
+// 		Message: "Comment updated successfully",
+// 		Data:    comment,
+// 	}, nil
+// }
 
 // LikeComment handles liking or unliking a comment
 func (s *BlogsService) LikeComment(commentId string, currentUser models.ICurrentUser) (LikeResponse, error) {
@@ -638,10 +701,6 @@ func (s *BlogsService) LikeComment(commentId string, currentUser models.ICurrent
 		s.logger.Printf("Error liking/unliking comment: %v", err)
 		return LikeResponse{}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Failed to like/unlike comment"}
 	}
-
-	// var likesCount int64
-	// s.db.Model(&models.Like{}).Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "ref_id", Value: commentId}}}).
-	// 	Count(&likesCount)
 
 	return LikeResponse{
 		Liked:      like.LikeId == "",
