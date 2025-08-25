@@ -214,8 +214,10 @@ func (s *BlogsService) Create(dto CreateBlogDto, currentUser models.ICurrentUser
 			return fmt.Errorf("failed to marshal images: %w", err)
 		}
 
+		blogId := utils.GenerateID()
+
 		blog = models.Blog{
-			BlogId:            utils.GenerateID(),
+			BlogId:            blogId,
 			UserId:            currentUser.UserId,
 			Title:             dto.Title,
 			ExternalLink:      dto.ExternalLink,
@@ -240,6 +242,25 @@ func (s *BlogsService) Create(dto CreateBlogDto, currentUser models.ICurrentUser
 			return err
 		}
 
+		if dto.Pinned && dto.RepostedFromBlogId == "" {
+			pinnedBlog := models.PinnedBlog{
+				PinnedBlogId: utils.GenerateID(),
+				BlogId:       blogId,
+				StartDate:    time.Now().UTC(),
+				EndDate:      time.Now().UTC().AddDate(0, 0, dto.PinnedNumerOfDays),
+				UserId:       currentUser.UserId,
+				CreatedAt:    time.Now().UTC(),
+				UpdatedAt:    time.Now().UTC(),
+				CreatedBy:    currentUser.FullName,
+				UpdatedBy:    currentUser.FullName,
+			}
+
+			if err := tx.Create(&pinnedBlog).Error; err != nil {
+				return err
+			}
+
+			// Make payment placeholder
+		}
 		if dto.RepostedFromBlogId != "" {
 
 			// Increment sharesCount on the associated blog
@@ -346,21 +367,41 @@ func (s *BlogsService) Delete(blogId string, currentUser models.ICurrentUser) (m
 			return err
 		}
 
+		if err := tx.Model(&models.PinnedBlog{}).Where("blog_id = ?", blogId).Delete(&models.PinnedBlog{}).Error; err != nil { // Unpin if pinned
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Do nothing if not found
+			} else {
+				return err
+			}
+		}
+
 		if err := tx.Model(&models.UsersStats{}).Where("user_id = ?", blog.UserId).Update("total_posts", gorm.Expr("total_posts - 1")).Error; err != nil {
 			return err
 		}
 
 		if err := tx.Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "ref_id", Value: blogId}}}).
 			Delete(&models.Comment{}).Error; err != nil {
-			return err
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Do nothing if not found
+			} else {
+				return err
+			}
 		}
 		if err := tx.Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "ref_id", Value: blogId}}}).
 			Delete(&models.Like{}).Error; err != nil {
-			return err
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Do nothing if not found
+			} else {
+				return err
+			}
 		}
 		if err := tx.Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "ref_id", Value: blogId}}}).
 			Delete(&models.Share{}).Error; err != nil {
-			return err
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Do nothing if not found
+			} else {
+				return err
+			}
 		}
 		return tx.Clauses(clause.Where{Exprs: []clause.Expression{clause.Eq{Column: "blog_id", Value: blogId}}}).
 			Delete(&blog).Error
@@ -998,33 +1039,58 @@ func (s *BlogsService) enrichBlogs(blogs []models.Blog, currentUser models.ICurr
 	return blogsWithMeta, nil
 }
 
-// FindPinnedBlogs retrieves all pinned blogs
+// FindPinnedBlogs retrieves all currently active pinned blogs with pagination
 func (s *BlogsService) FindPinnedBlogs(currentUser models.ICurrentUser, page, limit int) (models.PaginatedResponse, error) {
-	var totalItems int64
-	s.db.Model(&models.PinnedBlog{}).Count(&totalItems)
-
+	now := time.Now().UTC()
 	offset := (page - 1) * limit
-	var pinnedBlogs []models.PinnedBlog
-	err := s.db.Preload("Blog.User", func(db *gorm.DB) *gorm.DB {
-		return db.Select("profile_image", "full_name", "user_id", "email", "verified")
-	}).Order("created_at DESC").Limit(limit).Offset(offset).Find(&pinnedBlogs).Error
-	if err != nil {
-		s.logger.Printf("Error fetching pinned blogs: %v", err)
-		return models.PaginatedResponse{Data: []BlogWithMeta{}}, &fiber.Error{Code: fiber.StatusInternalServerError, Message: "Unable to fetch pinned blogs"}
+
+	// Get total count of active pinned blogs
+	var totalItems int64
+	if err := s.db.Model(&models.PinnedBlog{}).
+		Where("end_date >= ?", now).
+		Count(&totalItems).Error; err != nil {
+		s.logger.Printf("Error counting active pinned blogs: %v", err)
+		return models.PaginatedResponse{}, &fiber.Error{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Unable to count pinned blogs",
+		}
 	}
 
-	var blogs []models.Blog
+	// Fetch active pinned blogs with pagination
+	var pinnedBlogs []models.PinnedBlog
+	err := s.db.
+		Where("end_date >= ?", now).
+		Preload("Blog.User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("profile_image", "full_name", "user_id", "email", "verified")
+		}).
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&pinnedBlogs).Error
+
+	if err != nil {
+		s.logger.Printf("Error fetching pinned blogs: %v", err)
+		return models.PaginatedResponse{}, &fiber.Error{
+			Code:    fiber.StatusInternalServerError,
+			Message: "Unable to fetch pinned blogs",
+		}
+	}
+
+	// Extract blogs and filter out nil entries
+	blogs := make([]models.Blog, 0, len(pinnedBlogs))
 	for _, pb := range pinnedBlogs {
 		if pb.Blog != nil {
 			blogs = append(blogs, *pb.Blog)
 		}
 	}
 
+	// Enrich blogs with metadata
 	blogsWithMeta, err := s.enrichBlogs(blogs, currentUser)
 	if err != nil {
-		return models.PaginatedResponse{Data: []BlogWithMeta{}}, err
+		return models.PaginatedResponse{}, fmt.Errorf("failed to enrich blogs: %w", err)
 	}
 
+	// Calculate pagination metadata
 	totalPages := (totalItems + int64(limit) - 1) / int64(limit)
 
 	return models.PaginatedResponse{

@@ -13,6 +13,8 @@ type CreateBlogDto struct {
 	Video              string   `json:"video" example:"https://example.com/video.mp4"`
 	Audio              string   `json:"audio" example:"https://example.com/updated-audio.mp3"`
 	RepostedFromBlogId string   `json:"RepostedFromBlogId,omitempty" example:"some-other-blog-id"`
+	Pinned             bool     `json:"pinned,omitempty" example:"false"`
+	PinnedNumerOfDays  int      `json:"pinnedNumberOfDays,omitempty" example:"7"`
 }
 
 // UpdateBlogDto defines the input for updating a blog

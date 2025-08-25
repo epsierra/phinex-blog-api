@@ -274,11 +274,11 @@ func AuthenticatedGuard(db *gorm.DB) fiber.Handler {
 			}
 		}
 
-		// if !isAuthenticated {
-		// 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-		// 		"message": "Forbidden: Authenticated users only",
-		// 	})
-		// }
+		if !isAuthenticated {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"message": "Forbidden: Authenticated users only",
+			})
+		}
 
 		// Set current user in context
 		currentUser := models.ICurrentUser{

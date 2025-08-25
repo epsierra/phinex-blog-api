@@ -33,7 +33,7 @@ func (c *BlogsController) RegisterRoutes(app *fiber.App) {
 	app.Post("/blogs", c.CreateBlog)                                 // Create a new blog post
 	app.Get("/pinned-blogs", c.FindPinnedBlogs)                      // Get all pinned blogs
 	app.Get("/blogs/:blogId", c.FindBlogById)                        // Get a blog post by its ID
-	app.Get("/following-blogss", c.FindFollowingBlogs)               // Get all sessions blogs
+	app.Get("/following-blogs", c.FindFollowingBlogs)                // Get all sessions blogs
 	app.Get("/blogs", c.FindAllBlogs)                                // Get all blogs
 	app.Put("/blogs/:blogId", c.UpdateBlog)                          // Update a blog post
 	app.Put("/blogs/:blogId/likes", c.LikeBlog)                      // Like and/or unlike a blog post
