@@ -1,12 +1,51 @@
-{
-  "data": null,
-  "metadata": {
-    "currentPage": 1,
-    "itemsPerPage": 10,
-    "totalItems": 0,
-    "totalPages": 0,
-    "hasNextPage": false,
-    "hasPreviousPage": false
-  }
 
-}
+  /**
+   * @method handlePinnedProduct
+   * @description Handles the logic for pinning a product.
+   * @param {any} tx - The transaction object.
+   * @param {any} product - The product to be pinned.
+   * @param {ICurrentUser} currentUser - The user pinning the product.
+   */
+  private async handlePinnedProduct(
+    tx: any,
+    product: any,
+    currentUser: ICurrentUser,
+    pinnedNumberOfDays: number,
+  ) {
+    const pinnedProductPricePerDay = 20;
+    const totalPinnedProductPrice =
+      pinnedProductPricePerDay * pinnedNumberOfDays;
+
+    const wallet = await tx.query.wallets.findFirst({
+      where: eq(schema.wallets.userId, currentUser.userId),
+    });
+
+    if (!wallet || parseFloat(wallet.balance) < totalPinnedProductPrice) {
+      throw new BadRequestException('Insufficient funds to pin this product.');
+    }
+
+    await tx
+      .update(schema.wallets)
+      .set({
+        balance: (parseFloat(wallet.balance) - totalPinnedProductPrice).toFixed(
+          2,
+        ),
+      })
+      .where(eq(schema.wallets.userId, currentUser.userId));
+
+    const now = new Date();
+    const startDate = fromZonedTime(now, 'UTC');
+
+    const endDate = addDays(now, pinnedNumberOfDays);
+
+    const pinnedProductId = `phi${generateId()}`;
+    await tx.insert(schema.pinnedProducts).values({
+      pinnedProductId,
+      productId: product.productId,
+      userId: currentUser.userId,
+      startDate: startDate,
+      endDate: fromZonedTime(endDate, 'UTC'),
+      createdBy: currentUser.fullName,
+      updatedBy: currentUser.fullName,
+    });
+  }

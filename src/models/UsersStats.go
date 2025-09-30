@@ -16,6 +16,8 @@ type UsersStats struct {
 	CanceledOrdersCount      int       `gorm:"default:0;column:canceled_orders_count" json:"canceledOrdersCount"`
 	PreOrdersCount           int       `gorm:"default:0;column:pre_orders_count" json:"preOrdersCount"`
 	RequestedPreOrdersCount  int       `gorm:"default:0;column:requested_pre_orders_count" json:"requestedPreOrdersCount"`
+	RefunededPreOrdersCount  int       `gorm:"default:0;column:refunded_pre_orders_count" json:"refundedPreOrdersCount"`
+	RefunededOrdersCount     int       `gorm:"default:0;column:refunded_orders_count" json:"refundedOrdersCount"`
 	ApprovedPreOrdersCount   int       `gorm:"default:0;column:approved_pre_orders_count" json:"approvedPreOrdersCount"`
 	DeclinedPreOrdersCount   int       `gorm:"default:0;column:declined_pre_orders_count" json:"declinedPreOrdersCount"`
 	PendingPreOrdersCount    int       `gorm:"default:0;column:pending_pre_orders_count" json:"pendingPreOrdersCount"`

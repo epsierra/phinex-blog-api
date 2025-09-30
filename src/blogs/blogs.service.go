@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/epsierra/phinex-blog-api/src/models"
@@ -243,23 +244,12 @@ func (s *BlogsService) Create(dto CreateBlogDto, currentUser models.ICurrentUser
 		}
 
 		if dto.Pinned && dto.RepostedFromBlogId == "" {
-			pinnedBlog := models.PinnedBlog{
-				PinnedBlogId: utils.GenerateID(),
-				BlogId:       blogId,
-				StartDate:    time.Now().UTC(),
-				EndDate:      time.Now().UTC().AddDate(0, 0, dto.PinnedNumerOfDays),
-				UserId:       currentUser.UserId,
-				CreatedAt:    time.Now().UTC(),
-				UpdatedAt:    time.Now().UTC(),
-				CreatedBy:    currentUser.FullName,
-				UpdatedBy:    currentUser.FullName,
+			if dto.PinnedNumerOfDays <= 0 {
+				return &fiber.Error{Code: fiber.StatusBadRequest, Message: "Pinned number of days is required for pinned blogs."}
 			}
-
-			if err := tx.Create(&pinnedBlog).Error; err != nil {
+			if err := s.handlePinnedBlog(tx, &blog, currentUser, dto.PinnedNumerOfDays); err != nil {
 				return err
 			}
-
-			// Make payment placeholder
 		}
 		if dto.RepostedFromBlogId != "" {
 
@@ -1104,6 +1094,60 @@ func (s *BlogsService) FindPinnedBlogs(currentUser models.ICurrentUser, page, li
 			HasPreviousPage: int64(page) > 1,
 		},
 	}, nil
+}
+
+// handlePinnedBlog creates a new pinned blog entry and handles payment
+func (s *BlogsService) handlePinnedBlog(tx *gorm.DB, blog *models.Blog, currentUser models.ICurrentUser, pinnedNumberOfDays int) error {
+	pinnedBlogPricePerDay := 20.00 // Assuming a price per day
+	totalPinnedBlogPrice := pinnedBlogPricePerDay * float64(pinnedNumberOfDays)
+
+	var wallet models.Wallet
+	if err := tx.Where("user_id = ?", currentUser.UserId).First(&wallet).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &fiber.Error{Code: fiber.StatusBadRequest, Message: "User wallet not found."}
+		}
+		return err
+	}
+
+	// Convert wallet balance to float64 for comparison
+	currentBalance := wallet.Balance
+
+	if currentBalance < totalPinnedBlogPrice {
+		return &fiber.Error{Code: fiber.StatusBadRequest, Message: "Insufficient funds to pin this blog."}
+	}
+
+	// Deduct the price from the wallet
+	newBalance := currentBalance - totalPinnedBlogPrice
+
+	floatBalance, err := strconv.ParseFloat(fmt.Sprintf("%.2f", newBalance), 64) // Format back to 2 decimal places
+	if err != nil {
+		return fmt.Errorf("couldn't parse string to float: %w", err)
+	}
+	wallet.Balance = floatBalance
+	wallet.UpdatedAt = time.Now().UTC()
+	wallet.UpdatedBy = currentUser.FullName
+
+	if err := tx.Save(&wallet).Error; err != nil {
+		return fmt.Errorf("failed to update wallet balance: %w", err)
+	}
+
+	pinnedBlog := models.PinnedBlog{
+		PinnedBlogId: utils.GenerateID(),
+		BlogId:       blog.BlogId,
+		StartDate:    time.Now().UTC(),
+		EndDate:      time.Now().UTC().AddDate(0, 0, pinnedNumberOfDays),
+		UserId:       currentUser.UserId,
+		CreatedAt:    time.Now().UTC(),
+		UpdatedAt:    time.Now().UTC(),
+		CreatedBy:    currentUser.FullName,
+		UpdatedBy:    currentUser.FullName,
+	}
+
+	if err := tx.Create(&pinnedBlog).Error; err != nil {
+		return err
+	}
+	s.logger.Printf("Payment successful: Blog %s pinned for %d days by %s. Amount deducted: %.2f", blog.BlogId, pinnedNumberOfDays, currentUser.FullName, totalPinnedBlogPrice)
+	return nil
 }
 
 // contains checks if a slice contains a string
