@@ -1,0 +1,64 @@
+name: Deploy Go App to EC2
+run-name: Running CD Pipeline; deploying Go server to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Deploy source code to EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.EC2_HOST_DNS }}
+          REMOTE_USER: ${{ secrets.EC2_USERNAME }}
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+
+          rsync -avz \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            -e "ssh -i key.pem -o StrictHostKeyChecking=no" \
+            ./ $REMOTE_USER@$REMOTE_HOST:~/$TARGET_DIR/
+
+          rm key.pem
+
+      - name: Build and Deploy on EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.EC2_HOST_DNS }}
+          REMOTE_USER: ${{ secrets.EC2_USERNAME }}
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+
+          ssh -i key.pem -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << EOF
+            echo "Navigating to project directory: ~/$TARGET_DIR"
+            cd ~/$TARGET_DIR
+
+            echo "Stopping existing Docker services..."
+            sudo docker compose down -v
+
+            echo "Building and starting new Docker services..."
+            sudo docker compose up -d --build
+
+            echo "Cleaning up unused Docker images..."
+            sudo docker image prune -f
+
+            echo "Deployment complete."
+          EOF
+
+          rm key.pem

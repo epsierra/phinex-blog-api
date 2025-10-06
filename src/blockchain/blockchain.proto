@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package blockchain;
+
+option go_package = "./blockchain";
+
+service TransactionService {
+  rpc CreateTransaction (CreateTransactionRequest) returns (CreateTransactionResponse);
+  rpc CreateTransactions (CreateTransactionsRequest) returns (CreateTransactionsResponse);
+}
+
+message CreateTransactionsRequest {
+  repeated CreateTransactionRequest transactions = 1;
+}
+
+message CreateTransactionsResponse {
+  repeated CreateTransactionResponse responses = 1;
+}
+
+message CreateTransactionRequest {
+  optional string sender_address = 1;
+  string recipient_address = 2;
+  string amount = 3;
+  string currency = 4;
+  string transaction_type = 5;
+  string status = 6;
+  optional string description = 7;
+  optional string public_key = 8;
+  optional string signature = 9;
+}
+
+message CreateTransactionResponse {
+  bool success = 1;
+  string message = 2;
+  optional string transaction_id = 3;
+}

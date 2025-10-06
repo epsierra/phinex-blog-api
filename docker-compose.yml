@@ -4,32 +4,19 @@ services:
   api:
     build:
       context: .
-      target: prod
-      args:
-        - NODE_ENV=production
-    container_name: auth_server
+    container_name: phinex_blog_api
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      NODE_ENV: production
     ports:
       - "${PORT:-5000}:5000"
-    volumes:
-      - ./logs:/usr/src/app/logs              # Persist logs
-      - ./dist:/usr/src/app/dist              # Mount built code
-      - ./views:/usr/src/app/views            # Mount views/templates
-    depends_on:
-      - postgres
     networks:
-      - app_network
+      - phinex_network
 
   caddy:
     image: caddy:2
-    container_name: auth_caddy
+    container_name: phinex_caddy
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "80:80"
       - "443:443"
@@ -38,44 +25,21 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - ./logs/caddy:/var/log/caddy
-      - ./public:/srv
     depends_on:
       - api
     networks:
-      - app_network
-
+      - phinex_network
 volumes:
   postgres_data:
-    name: auth_db_data
+    name: phinex_blog_db_data
 
   caddy_data:
-    name: auth_api_caddy_data
+    name: phinex_api_caddy_data
 
   caddy_config:
-    name: auth_api_caddy_config
-
-  logs:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/logs
-      o: bind
-
-  uploads:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/uploads
-      o: bind
-
-  scripts:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/scripts
-      o: bind
+    name: phinex_api_caddy_config
 
 networks:
-  app_network:
-    name: auth_network
+  phinex_network:
+    name: phinex_network
     driver: bridge

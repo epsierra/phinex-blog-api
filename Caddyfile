@@ -1,5 +1,5 @@
 # Production - HTTPS
-https://phinex.blog.epsierra.com {
+https://blog.phinex.services {
     reverse_proxy api:5000 {
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}

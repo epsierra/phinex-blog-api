@@ -1,6 +1,7 @@
 package blogs
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	pb "github.com/epsierra/phinex-blog-api/src/blockchain"
 	"github.com/epsierra/phinex-blog-api/src/models"
 	"github.com/epsierra/phinex-blog-api/src/utils"
 	"github.com/gofiber/fiber/v2"
@@ -18,15 +20,19 @@ import (
 
 // BlogsService handles blog-related operations
 type BlogsService struct {
-	db     *gorm.DB
-	logger *log.Logger
+	db               *gorm.DB
+	logger           *log.Logger
+	blockchainClient pb.TransactionServiceClient
 }
 
 // NewBlogsService creates a new BlogsService instance
 func NewBlogsService(db *gorm.DB) *BlogsService {
+	blockchainClient, conn := pb.NewBlockchainClient()
+	defer conn.Close()
 	return &BlogsService{
-		db:     db,
-		logger: log.New(os.Stderr, "blogs-service: ", log.LstdFlags),
+		db:               db,
+		logger:           log.New(os.Stderr, "blogs-service: ", log.LstdFlags),
+		blockchainClient: blockchainClient,
 	}
 }
 
@@ -1146,6 +1152,37 @@ func (s *BlogsService) handlePinnedBlog(tx *gorm.DB, blog *models.Blog, currentU
 	if err := tx.Create(&pinnedBlog).Error; err != nil {
 		return err
 	}
+
+	// Create a new transaction record
+	transaction := models.Transaction{
+		TransactionId: utils.GenerateID(),
+		WalletId:      wallet.WalletId,
+		Amount:        totalPinnedBlogPrice,
+		Type:          models.Deposit,
+		Status:        models.Completed,
+		Description:   fmt.Sprintf("Fee for pinning blog %s for %d days", blog.BlogId, pinnedNumberOfDays),
+		CreatedAt:     time.Now().UTC(),
+		UpdatedAt:     time.Now().UTC(),
+		CreatedBy:     currentUser.FullName,
+		UpdatedBy:     currentUser.FullName,
+	}
+
+	if err := tx.Create(&transaction).Error; err != nil {
+		return fmt.Errorf("failed to create transaction record: %w", err)
+	}
+
+	_, err = s.blockchainClient.CreateTransaction(context.Background(), &pb.CreateTransactionRequest{
+		RecipientAddress: wallet.AccountNumber,
+		Amount:           fmt.Sprintf("%.2f", totalPinnedBlogPrice),
+		Currency:         wallet.Currency,
+		TransactionType:  "deposit",
+		Status:           "completed",
+	})
+
+	if err != nil {
+		return err
+	}
+
 	s.logger.Printf("Payment successful: Blog %s pinned for %d days by %s. Amount deducted: %.2f", blog.BlogId, pinnedNumberOfDays, currentUser.FullName, totalPinnedBlogPrice)
 	return nil
 }
